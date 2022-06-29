@@ -4,11 +4,11 @@ public class PoorBox<T> {
 
     private T value;
 
-    public T get() {
+    public T getValue() {
         return value;
     }
 
-    public void set(T t) {
+    public void setValue(T t) {
         this.value = t;
     }
 
@@ -21,11 +21,11 @@ public class PoorBox<T> {
     }
 
     public void poorCopyFrom(PoorBox<T> source) {
-        this.value = source.get();
+        this.value = source.getValue();
     }
 
     public void poorCopyTo(PoorBox<T> dest) {
-        dest.set(this.value);
+        dest.setValue(this.value);
     }
 
 
@@ -41,10 +41,10 @@ public class PoorBox<T> {
      * */
 
     public void copyFrom(PoorBox<? extends T> source) {
-        this.value = source.get();
+        this.value = source.getValue();
     }
 
     public void copyTo(PoorBox<? super T> dest) {
-        dest.set(this.value);
+        dest.setValue(this.value);
     }
 }
