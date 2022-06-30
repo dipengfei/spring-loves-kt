@@ -48,7 +48,7 @@ public class VarianceTests {
 
         Assertions.assertThrowsExactly(ArrayStoreException.class, () -> {
             // it can be compiled, but error occurs in runtime.
-            objs[0] = "0";
+            objs[0] = "abc";
             log.info("objs[0]: {}", objs[0]);
         });
 
