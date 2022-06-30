@@ -18,17 +18,22 @@ Generics Dependency)等高级主题。
 - 时机(Timing)
     - 编译时(compile-time)
     - 运行时(runtime)
+- PECS
+    - Producer -> Extends
+    - Consumer -> Super
 - 型变(Variance)
     - 协变(Covariance)
     - 逆变(Contravariance)
-    - 不变(invariance)
+    - 不型变(invariance)
 - 型变位置(Variance Site)
-    - 声明处(Declaration-site variance)
-    - 使用处(Use-site variance variance)
-- 投影(Projections)
-    - 类型投影(Type Projections)
-    - 星投影(Star Projections)
-- PECS
+    - 声明处型变(Declaration-site variance)
+        - Consumer -> in,
+        - Producer -> out
+    - 使用处型变(Use-site variance)
+        - 投影(Projections)
+            - 类型投影(Type Projections)
+            - 星投影(Star Projections)
+
 - 类型擦除(Type Erasure)
 
 ## 型变定义
@@ -37,7 +42,7 @@ Generics Dependency)等高级主题。
 > 给定基类*Base*，记作*B*，*B*的派生类*Derived*，记作*D*，二者满足LSP，记作*B > D*。给定映射关系*R*，分别作用于*B*、*D*，得到*R(B)*、*R(D)*，
 > - 如果得到R(B) > R(D)，那么关系R为协变(Covariant)的;
 > - 如果得到R(B) < R(D)，那么关系R为逆变(Contravariant)的;
-> - 如果得到R(B) <> R(D)，那么关系R为不变(Invariant)的。
+> - 如果得到R(B) <> R(D)，那么关系R为不型变(Invariant)的。
 
 在本文中讨论的范围内，关系R主要表现为
 
@@ -75,7 +80,7 @@ public class PoorBox<T> {}
 PoorBox<Number> numberPoorBox = new PoorBox<Integer>();
 ```
 
-从上面的代码可以看出，范型(Generics)被设计成不变(Invariant)的，与数组(Array)相比，优缺点刚好相反，缺点(Cons)：
+从上面的代码可以看出，范型(Generics)被设计成不型变(Invariant)的，与数组(Array)相比，优缺点刚好相反，缺点(Cons)：
 
 - 反直觉(counterintuitive)。
 - 变量、参数丧失灵活性。
@@ -118,6 +123,15 @@ public class PoorBox<T> {
 ```
 
 ## Kotlin中的型变
+
+Kotlin按照自己的设计思路，结合Java语言中范型(Generics)系统的优缺点，给出了自己的实现方式。
+
+1. Kotlin把数组也设计成了范型类，统一了设计思路，避免使用两套不同的规则。
+2. Kotlin引入了[Nothing](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing.html)
+   类，为所有类型设定了一个下界。注意，这里说Nothing是所有类型的下界，而不是子类，并且Nothing不能被实例化。
+3. Kotlin引入了*声明处型变(Declaration-site variance)*，使得符合*PECS*原则的类型，在声明处即可获得型变。
+4. Kotlin引入了*使用处型变(Use-site variance)*和*类型投影(Type Projections)*，使得不符合*PECS*原则的类型，在使用处(作为函数参数)即可获得型变。
+5. Kotlin引入了*泛型约束(Generic constraints)*，相比于Java的类型上界(upper bound)只能指定单一上界，Kotlin中可以定义多个上界(upper bound)，这在约束类型实现多个接口时十分有用。
 
 ## 类型擦除(Type Erasure)
 
