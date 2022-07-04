@@ -73,7 +73,7 @@ objs[0] = "abc";
 
 接下来再看范型(Generics)，
 
-```
+``` Java
 public class PoorBox<T> {}
 
 // can't compile, as Generics is invariant.
@@ -106,7 +106,7 @@ PoorBox<Number> numberPoorBox = new PoorBox<Integer>();
 
 下面示例中的*copyFrom*与*copyTo*方法依照*PECS*原则创建
 
-```
+``` Java
 public class PoorBox<T> {
     private T value;
     public T getValue() {return value;}
@@ -131,8 +131,35 @@ Kotlin按照自己的设计思路，结合Java语言中范型(Generics)系统的
    类，为所有类型设定了一个下界。注意，这里说Nothing是所有类型的下界，而不是子类，并且Nothing不能被实例化。
 3. Kotlin引入了*声明处型变(Declaration-site variance)*，使得符合*PECS*原则的类型，在声明处即可获得型变。
 4. Kotlin引入了*使用处型变(Use-site variance)*和*类型投影(Type Projections)*，使得不符合*PECS*原则的类型，在使用处(作为函数参数)即可获得型变。
-5. Kotlin引入了*泛型约束(Generic constraints)*，相比于Java的类型上界(upper bound)只能指定单一上界，Kotlin中可以定义多个上界(upper bound)，这在约束类型实现多个接口时十分有用。
+5. Kotlin引入了*泛型约束(Generic constraints)*，相比于Java的类型上界(upper bound)只能指定单一上界，Kotlin中可以定义多个上界(upper bound)
+   ，这在约束类型实现多个接口时十分有用。
 
 ## 类型擦除(Type Erasure)
+
+作为构建于JVM之上的编程语言，Java和Kotlin都无法避免*类型擦除(Type Erasure)*。为保证类型安全，基于范型(Generics)的类型检查，只发生在编译时(compile-time)，运行时(runtime)
+泛型类型的实例不保留关于其类型实参的任何信息。因此，我们无法在Java中使用*instanceof*或者在Kotlin中使用*is*来在运行时(runtime)检测一个泛型类型的实例是否通过指定类型参数所创建。
+
+``` Java
+var integerBox = new Box<Integer>();
+// you can only do this
+if (integerBox instanceof Box) {}
+// but can not do this
+if (integerBox instanceof Box<Integer>) {}
+```
+
+除此之外，转型(casting)时，虽然可以转型至范型类型，编译器会对非受检类型转换发出警告，因为这种转型(casting)有可能时不安全的。在实际使用中，为避免运行时出现*ClassCastException*，可以借助*
+TypeReference*，很多库都会提供类似功能，例如jackson，
+
+``` Java
+var json = "{\"value\" : 1.5}";
+var objectMapper = ...;
+var doublePoorBox = objectMapper.readValue(json, new TypeReference<PoorBox<Double>>() {});
+```
+
+Spring中的[RestTemplate](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/client/RestTemplate.html)也有类似的用法，
+
+``` Java
+ ResponseEntity<PoorBox<Double>> response = restTemplate.exchange(url, httpMethod.POST, requestEntity, new ParameterizedTypeReference<PoorBox<Double>>(){});
+```
 
 ## Spring对范型依赖的处理(Spring Generics Dependency)
