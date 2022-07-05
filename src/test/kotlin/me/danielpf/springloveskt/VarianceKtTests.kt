@@ -58,7 +58,8 @@ class VarianceKtTests {
         // Foo<*> is equivalent to Foo<out TUpper>.
         // This means that when the T is unknown you can safely read values of TUpper from Foo<*>
         // val str: String = starOutBox.value is not allowed
-        Assertions.assertEquals(starOutBox.value, "out")
+        val outBoxValue = starOutBox.value
+        Assertions.assertEquals(outBoxValue, "out")
 
         val starInBox: InBox<*> = InBox("in")
         // Foo<*> is equivalent to Foo<in Nothing>.

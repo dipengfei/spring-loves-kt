@@ -156,10 +156,48 @@ var objectMapper = ...;
 var doublePoorBox = objectMapper.readValue(json, new TypeReference<PoorBox<Double>>() {});
 ```
 
-Spring中的[RestTemplate](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/client/RestTemplate.html)也有类似的用法，
+Spring中的[RestTemplate](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/client/RestTemplate.html)
+也有类似的用法，
 
 ``` Java
  ResponseEntity<PoorBox<Double>> response = restTemplate.exchange(url, httpMethod.POST, requestEntity, new ParameterizedTypeReference<PoorBox<Double>>(){});
 ```
 
 ## Spring对范型依赖的处理(Spring Generics Dependency)
+
+Spring中支持注入范型Bean，并充分支持型变(Variance)。例如注入List时，Spring会根据范型参数和型变来过滤候选Bean。以下为简单的示例，
+
+``` Kotlin
+// generics class, Declaration-site variance, out -> covariant
+class OutBox<out T>(val value: T)
+
+@Configuration
+class BoxConfig {
+    
+    @Bean
+    fun intOutBox() = OutBox(1)
+
+    @Bean
+    fun numberOutBox() = OutBox<Number>(2.5)
+        
+    @Bean
+    fun stringOutBox() = OutBox("out")
+
+}
+
+@Component
+class BoxBeansHolder(
+    val intOutBoxList: List<OutBox<Int>>, // 1 bean injected: OutBox<Number>
+    val numberOutBoxList: List<OutBox<Number>>, // 2 beans injected: OutBox<Number>, OutBox<Int> 
+    val anyOutBoxList: List<OutBox<Any?>> // 3 beans injected: OutBox<Number>, OutBox<Int>, OutBox<String>
+)
+
+```
+## 总结
+
+范型(Generics)几乎是每种高级编程语言需要考虑的特性，而可变性(Variance)又伴随范型(Generics)而生，Java和Kotlin也给出了自己的实现原则。
+
+1. 范型(Generics)出现在JDK 1.5，Java为支持范型并保证最大的向下兼容性，把范型设计成了编译后类型擦除(Type Erasure)，在可变性(Variance)方面，为保证类型安全，选择了不型变(invariance)。
+2. 为保证API的灵活性，Java引入了范型边界和*PECS*原则。
+3. Kotlin意识到了Java语言在范型(Generics)方面的问题，引入了声明处型变(Declaration-site variance)和使用处型变(Use-site variance)，总体说来是进步的，但在客观上也增加了语言的复杂性。
+4. Spring等框架也充分意识到型变(Variance)的重要性，在注入范型Bean时，按照型变原则来判定候选Bean。

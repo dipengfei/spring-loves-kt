@@ -13,7 +13,7 @@ abstract class TypeNameAware {
 }
 
 class OutBox<out T>(val value: T) : TypeNameAware() {
-    override fun toString() = this.typeName?.let { "$typeName($value)" } ?: super.toString()
+    override fun toString() = this.typeName?.let { "$it($value)" } ?: super.toString()
 }
 
 class InBox<in T>(private var value: T) : TypeNameAware() {
@@ -22,7 +22,7 @@ class InBox<in T>(private var value: T) : TypeNameAware() {
         this.value = value
     }
 
-    override fun toString() = this.typeName?.let { "$typeName($value)" } ?: super.toString()
+    override fun toString() = this.typeName?.let { "$it($value)" } ?: super.toString()
 }
 
 class Box<T>(var value: T) : TypeNameAware() {
@@ -35,7 +35,7 @@ class Box<T>(var value: T) : TypeNameAware() {
         dest.value = this.value
     }
 
-    override fun toString() = this.typeName?.let { "$typeName($value)" } ?: super.toString()
+    override fun toString() = this.typeName?.let { "$it($value)" } ?: super.toString()
 }
 
 
