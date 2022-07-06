@@ -128,11 +128,24 @@ Kotlin按照自己的设计思路，结合Java语言中范型(Generics)系统的
 
 1. Kotlin把数组也设计成了范型类，统一了设计思路，避免使用两套不同的规则。
 2. Kotlin引入了[Nothing](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing.html)
-   类，为所有类型设定了一个下界。注意，这里说Nothing是所有类型的下界，而不是子类，并且Nothing不能被实例化。
+   类，为所有类型设定了一个下界。
 3. Kotlin引入了*声明处型变(Declaration-site variance)*，使得符合*PECS*原则的类型，在声明处即可获得型变。
-4. Kotlin引入了*使用处型变(Use-site variance)*和*类型投影(Type Projections)*，使得不符合*PECS*原则的类型，在使用处(作为函数参数)即可获得型变。
+4. Kotlin引入了*使用处型变(Use-site variance)*和*类型投影(Type Projections)*，使得不符合*PECS*原则的类型，在使用处(作为函数参数)即可获得型变。其中*星投影*比较特殊，即便对类型一无所知，在使用*星投影*时，仍然可以保证类型安全，因为*星投影*会限制读写：
+    - 对于协变(Covariant)类型T\<out E : Upper>，T\<\*>相当于T\<out Upper>，从T\<\*>中读取值一定是安全的，但类型会上转型至E的上界，如果E没有上界，会上转型至Any?。
+    - 对于逆变(Contravariant)类型T\<in E>，T\<\*>相当于T\<in Nothing>，这时无法向T\<\*>中写入任何值，因为Nothing无法被实例化。
+    - 对于不变(Invariant)类型T\<E : Upper>，读取时相当于T\<out Upper>，写入时相当于T\<in Nothing>。
 5. Kotlin引入了*泛型约束(Generic constraints)*，相比于Java的类型上界(upper bound)只能指定单一上界，Kotlin中可以定义多个上界(upper bound)
    ，这在约束类型实现多个接口时十分有用。
+
+> 注意，这里说Nothing是所有类型的下界，而不是子类，并且Nothing不能被实例化。与*星投影*类似，*Nothing*在编译后，也会被编译成?类型，类似Java语言中的*Raw Type*。
+
+根据上面的论述，我们可以依照LSP来总结一下Kotlin中的型变规则。
+给定范型T\<E>，以及具体类型String、Number、Int和Any?，那么
+1. 无论T在E上是协变、逆变或不变，都有T\<*> = T\<Nothing> = T\<?>，而T\<?> > T\<Other>, Other = String、Number、Int和Any?。
+2. 假设T在E上是协变的，则T\<Any?> > T\<Number> > T\<Int>，T\<Any?> > T\<String>。
+3. 假设T在E上是逆变的，则T\<Any?> \< T\<Number> \< T\<Int>，T\<Any?> \< T\<String>。
+4. 假设T在E上是不变的，则T\<Any?>、T\<Number>、T\<Int>和T\<String>无大小判定关系。
+
 
 ## 类型擦除(Type Erasure)
 
@@ -193,11 +206,13 @@ class BoxBeansHolder(
 )
 
 ```
+
 ## 总结
 
 范型(Generics)几乎是每种高级编程语言需要考虑的特性，而可变性(Variance)又伴随范型(Generics)而生，Java和Kotlin也给出了自己的实现原则。
 
 1. 范型(Generics)出现在JDK 1.5，Java为支持范型并保证最大的向下兼容性，把范型设计成了编译后类型擦除(Type Erasure)，在可变性(Variance)方面，为保证类型安全，选择了不型变(invariance)。
 2. 为保证API的灵活性，Java引入了范型边界和*PECS*原则。
-3. Kotlin意识到了Java语言在范型(Generics)方面的问题，引入了声明处型变(Declaration-site variance)和使用处型变(Use-site variance)，总体说来是进步的，但在客观上也增加了语言的复杂性。
+3. Kotlin意识到了Java语言在范型(Generics)方面的问题，引入了声明处型变(Declaration-site variance)和使用处型变(Use-site variance)
+   ，总体说来是进步的，但在客观上也增加了语言的复杂性。
 4. Spring等框架也充分意识到型变(Variance)的重要性，在注入范型Bean时，按照型变原则来判定候选Bean。
