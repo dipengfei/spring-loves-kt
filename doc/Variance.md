@@ -33,7 +33,6 @@ Generics Dependency)等高级主题。
         - 投影(Projections)
             - 类型投影(Type Projections)
             - 星投影(Star Projections)
-
 - 类型擦除(Type Erasure)
 
 ## 型变定义
@@ -54,7 +53,7 @@ Generics Dependency)等高级主题。
 在Java中，数组(Array)被设计成协变(Covariance)的，而范型(Generics)被设计成不变(Invariant)的，下面我们会举例说明这样设计的优缺点。
 首先看数组(Array)，
 
-```
+``` Java
 // it can be compiled, as Array in Java is covariant, upper cast is ok
 Object[] objs = new Integer[10];
 
